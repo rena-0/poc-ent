@@ -8,12 +8,25 @@ import (
     "strconv"
 
     "github.com/rena-0/poc-ent/ent"
+    "github.com/rena-0/poc-ent/ent/airport"
     _ "github.com/mattn/go-sqlite3"
 )
 
-type User struct {
-    Name string
-    Age  int
+type AirportData struct {
+    ID              int
+    Ident          string
+    Type           string
+    Name           string
+    LatitudeDeg    float64
+    LongitudeDeg   float64
+    ElevationFt    int
+    Continent      string
+    IsoCountry     string
+    IsoRegion      string
+    Municipality   string
+    ScheduledService string
+    GpsCode        string
+    LocalCode      string
 }
 
 func main() {
@@ -31,21 +44,21 @@ func main() {
     }
 
     // Read CSV
-    users, err := readCSV("data/users.csv")
+    airports, err := readCSV("data/airports.csv")
     if err != nil {
         log.Fatalf("failed to read CSV: %v", err)
     }
 
     // Import CSV data into SQLite
-    if err := importCSVToEnt(ctx, client, users); err != nil {
+    if err := importCSVToEnt(ctx, client, airports); err != nil {
         log.Fatalf("failed to import CSV: %v", err)
     }
 
     log.Println("CSV data imported successfully!")
 }
 
-// Reads a CSV file and returns a slice of User structs
-func readCSV(filename string) ([]User, error) {
+// Reads a CSV file and returns a slice of AirportData structs
+func readCSV(filename string) ([]AirportData, error) {
     file, err := os.Open(filename)
     if err != nil {
         return nil, err
@@ -58,21 +71,52 @@ func readCSV(filename string) ([]User, error) {
         return nil, err
     }
 
-    var users []User
-    for _, record := range records {
-        age, _ := strconv.Atoi(record[1]) // Convert age to int
-        users = append(users, User{Name: record[0], Age: age})
+    var airports []AirportData
+    for _, record := range records[1:] { // Skip the header row
+        id, _ := strconv.Atoi(record[0])         // ID to int
+        latitude, _ := strconv.ParseFloat(record[4], 64) // Latitude to float
+        longitude, _ := strconv.ParseFloat(record[5], 64) // Longitude to float
+        elevation, _ := strconv.Atoi(record[6])   // Elevation to int
+
+        airports = append(airports, AirportData{
+            ID:              id,
+            Ident:           record[1],
+            Type:            record[2],
+            Name:            record[3],
+            LatitudeDeg:     latitude,
+            LongitudeDeg:    longitude,
+            ElevationFt:     elevation,
+            Continent:       record[7],
+            IsoCountry:      record[8],
+            IsoRegion:       record[9],
+            Municipality:    record[10],
+            ScheduledService: record[11],
+            GpsCode:         record[12],
+            LocalCode:       record[13],
+        })
     }
-    return users, nil
+    return airports, nil
 }
 
 // Imports CSV data into SQLite using Ent
-func importCSVToEnt(ctx context.Context, client *ent.Client, users []User) error {
-    for _, u := range users {
-        _, err := client.User.
+func importCSVToEnt(ctx context.Context, client *ent.Client, airports []AirportData) error {
+    for _, a := range airports {
+        _, err := client.Airport.
             Create().
-            SetName(u.Name).
-            SetAge(u.Age).
+            SetID(a.ID).
+            SetIdent(a.Ident).
+            SetType(a.Type).
+            SetName(a.Name).
+            SetLatitudeDeg(a.LatitudeDeg).
+            SetLongitudeDeg(a.LongitudeDeg).
+            SetElevationFt(a.ElevationFt).
+            SetContinent(a.Continent).
+            SetIsoCountry(a.IsoCountry).
+            SetIsoRegion(a.IsoRegion).
+            SetMunicipality(a.Municipality).
+            SetScheduledService(a.ScheduledService).
+            SetGpsCode(a.GpsCode).
+            SetLocalCode(a.LocalCode).
             Save(ctx)
         if err != nil {
             return err
