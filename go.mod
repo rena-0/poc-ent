@@ -1,6 +1,6 @@
 module github.com/rena-0/poc-ent
 
-go 1.20
+go 1.18
 
 require (
     entgo.io/ent v0.11.6
