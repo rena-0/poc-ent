@@ -8,7 +8,7 @@ import (
     "strconv"
 
     "github.com/rena-0/poc-ent/ent"
-    "github.com/rena-0/poc-ent/ent/schema/airport"
+    "github.com/rena-0/poc-ent/ent/airport"
     _ "github.com/mattn/go-sqlite3"
 )
 
