@@ -3,8 +3,9 @@ package main
 import (
 	"log"
 
-	_ "github.com/ent/ent/cmd/entc" // Import ent codegen tool
-	"github.com/rena-0/poc-ent/ent"  // Your ent package
+	// Import the Ent code generation tool
+	_ "entgo.io/ent/cmd/entc" // This is required for generating the code
+	"github.com/rena-0/poc-ent/ent"
 )
 
 func main() {
